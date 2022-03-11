@@ -15,5 +15,3 @@ Selects the name of the network associated with the number, this can be used wit
 variables to dynamically name each panel.
 
 The Variables APIKEY and ORG_ID in the python script must be added manually for the script to work.
-
-TODO: Sanitize SQL input

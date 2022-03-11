@@ -7,7 +7,7 @@ import time
 #Globally accesibile variables
 API_KEY = ""
 ORG_ID = ""
-database = "meraki.db"
+DATABASE = "meraki.db"
 networks_and_ids = {}
 
 #Sum information from response JSON
@@ -17,23 +17,23 @@ def sum_network_response(response, detect):
         total += item[detect]
     return total
 
-def delete_old():
-    con = sqlite3.connect(database)
+def delete_old(subtract):
+    con = sqlite3.connect(DATABASE)
     cur = con.cursor()
     now = int(time.time())
-    then = now - 7500
+    then = now - subtract
 
     #Selects all data older than "then" and removes it, then saves the updated database.
     cur.execute("DELETE FROM networks WHERE time < " + str(then))
     con.commit()
     con.close()
 
-def run_data_collection():
-    dashboard = meraki.DashboardAPI(API_KEY)
-    response = dashboard.organizations.getOrganizationNetworks(ORG_ID)
+def run_data_collection(api, org):
+    dashboard = meraki.DashboardAPI(api)
+    response = dashboard.organizations.getOrganizationNetworks(org)
 
     #SQLite database connection
-    con = sqlite3.connect(database)
+    con = sqlite3.connect(DATABASE)
     cur = con.cursor()
     now = int(time.time())
     
@@ -61,13 +61,12 @@ def run_data_collection():
             if network in networks_and_ids.keys():
                 place = networks_and_ids[network]
             else:
-                place = len(networks_and_ids) + 1
+                place = len(networks_and_ids)
                 networks_and_ids[network] = place
                 
             #Commit retrieved data to sql db.
-            #TODO: Sanitize input
             cur.execute("CREATE TABLE IF NOT EXISTS networks(networkID TEXT, name TEXT, number INTEGER, sent INTEGER, recv INTEGER, time INTEGER)")
-            cur.execute("INSERT INTO networks(networkID, name, number, sent, recv, time) VALUES('" + str(network) + "', " + str("'" + network_names[i] + "'") + ", " + str(place) + ", " + str(sent) + ", " + str(recieved) + ", " + str(now) + ")")
+            cur.execute("INSERT INTO networks(networkID, name, number, sent, recv, time) VALUES(?, ?, ?, ?, ?, ?)", (str(network), str(network_names[i]), str(place), str(sent), str(recieved), str(now)))
         except Exception as e:
             print("Unable to retrieve information on network " + network)
             print(e)
@@ -78,11 +77,12 @@ def run_data_collection():
     con.commit()
     con.close()
 
-while True:
-    run_data_collection()
-    delete_old()
-    print("Sleeping")
-    #Wait for five minutes before looping again.
-    #Meraki API calls take ~15-20s total, so the time
-    #to sleep for it to happen every ~5 minutes is a bit under 300s.
-    time.sleep(285)
+if __name__ == "__main__":
+    while True:
+        run_data_collection(API_KEY, ORG_ID)
+        delete_old(7500)
+        print("Sleeping")
+        #Wait for five minutes before looping again.
+        #The Meraki API call takes ~15-20s total, so the time
+        #to sleep for it to happen every ~5 minutes is a bit under 300s.
+        time.sleep(285)
