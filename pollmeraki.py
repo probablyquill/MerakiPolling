@@ -8,6 +8,7 @@ import time
 API_KEY = ""
 ORG_ID = ""
 database = "meraki.db"
+networks_and_ids = {}
 
 #Sum information from response JSON
 def sum_network_response(response, detect):
@@ -53,11 +54,20 @@ def run_data_collection():
             response = dashboard.networks.getNetworkTraffic(network, timespan=7200)
             sent = sum_network_response(response, 'sent')
             recieved = sum_network_response(response, 'recv')
+            place = 0
 
+            #This ensures consistency on the meraki dashboard if a network is added or removed while the program is running. After reset, however,
+            #if networks have been added and/or removed, dynamic requests on Grafana using the number column may change which network is being displayed.
+            if network in networks_and_ids.keys():
+                place = networks_and_ids[network]
+            else:
+                place = len(networks_and_ids) + 1
+                networks_and_ids[network] = place
+                
             #Commit retrieved data to sql db.
             #TODO: Sanitize input
             cur.execute("CREATE TABLE IF NOT EXISTS networks(networkID TEXT, name TEXT, number INTEGER, sent INTEGER, recv INTEGER, time INTEGER)")
-            cur.execute("INSERT INTO networks(networkID, name, number, sent, recv, time) VALUES('" + str(network) + "', " + str("'" + network_names[i] + "'") + ", " + str(i) + ", " + str(sent) + ", " + str(recieved) + ", " + str(now) + ")")
+            cur.execute("INSERT INTO networks(networkID, name, number, sent, recv, time) VALUES('" + str(network) + "', " + str("'" + network_names[i] + "'") + ", " + str(place) + ", " + str(sent) + ", " + str(recieved) + ", " + str(now) + ")")
         except Exception as e:
             print("Unable to retrieve information on network " + network)
             print(e)
