@@ -35,6 +35,8 @@ def run_data_collection(api, org):
     #SQLite database connection
     con = sqlite3.connect(DATABASE)
     cur = con.cursor()
+    cur.execute("CREATE TABLE IF NOT EXISTS networks(networkID TEXT, name TEXT, number INTEGER, sent INTEGER, recv INTEGER, time INTEGER)")
+
     now = int(time.time())
     
     #Create/reset network_ids and network_names arrays.
@@ -65,7 +67,6 @@ def run_data_collection(api, org):
                 networks_and_ids[network] = place
                 
             #Commit retrieved data to sql db.
-            cur.execute("CREATE TABLE IF NOT EXISTS networks(networkID TEXT, name TEXT, number INTEGER, sent INTEGER, recv INTEGER, time INTEGER)")
             cur.execute("INSERT INTO networks(networkID, name, number, sent, recv, time) VALUES(?, ?, ?, ?, ?, ?)", (str(network), str(network_names[i]), str(place), str(sent), str(recieved), str(now)))
         except Exception as e:
             print("Unable to retrieve information on network " + network)
