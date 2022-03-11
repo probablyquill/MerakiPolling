@@ -6,7 +6,7 @@ import time
 
 #Globally accesibile variables
 API_KEY = ""
-orgID = ""
+ORD_ID = ""
 database = "meraki.db"
 
 #Sum information from response JSON
