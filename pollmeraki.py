@@ -6,7 +6,7 @@ import time
 
 #Globally accesibile variables
 API_KEY = ""
-ORD_ID = ""
+ORG_ID = ""
 database = "meraki.db"
 
 #Sum information from response JSON
@@ -29,7 +29,7 @@ def delete_old():
 
 def run_data_collection():
     dashboard = meraki.DashboardAPI(API_KEY)
-    response = dashboard.organizations.getOrganizationNetworks(orgID)
+    response = dashboard.organizations.getOrganizationNetworks(ORG_ID)
 
     #SQLite database connection
     con = sqlite3.connect(database)
