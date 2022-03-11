@@ -2,8 +2,7 @@ This script is designed to poll information from the meraki API using an API key
 It finds iterates through the networks and sums the sent and recieved data to be stored in an SQLite
 database. This data can then be polled by Grafana by number to display the data.
 
-Example:
-SQL Queries: 
+Example SQL Queries in Grafana:
 
     SELECT sent, recv, time FROM networks WHERE number=1;
 
