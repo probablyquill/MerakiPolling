@@ -17,6 +17,7 @@ def sum_network_response(response, detect):
         total += item[detect]
     return total
 
+#Removes outdated data to prevent database bloat.
 def delete_old(subtract):
     con = sqlite3.connect(DATABASE)
     cur = con.cursor()
@@ -36,7 +37,7 @@ def run_data_collection(api, org):
     con = sqlite3.connect(DATABASE)
     cur = con.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS networks(networkID TEXT, name TEXT, number INTEGER, sent INTEGER, recv INTEGER, time INTEGER)")
-
+    
     now = int(time.time())
     
     #Create/reset network_ids and network_names arrays.
