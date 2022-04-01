@@ -80,14 +80,16 @@ def run_data_collection(api, org, con):
 
 if __name__ == "__main__":
     while True:
-        cnx = mysql.connector.connect(user=SQL_USER, password=SQL_PASSWORD, host='127.0.0.1', database='networks')
+        try:
+            cnx = mysql.connector.connect(user=SQL_USER, password=SQL_PASSWORD, host='127.0.0.1', database='networks')
 
-        run_data_collection(API_KEY, ORG_ID, cnx)
-        delete_old(7500, cnx)
-        print("Sleeping")
+            run_data_collection(API_KEY, ORG_ID, cnx)
+            delete_old(7500, cnx)
+            print("Sleeping")
 
-        cnx.close()
-        
+            cnx.close()
+        except:
+            print("Error connecting to MySQL or to the Meraki API, waiting thirty seconds before trying again.")
         #Wait for five minutes before looping again.
         #The Meraki API call takes ~15-20s total, so the time
         #to sleep for it to happen every ~5 minutes is a bit under 300s.
